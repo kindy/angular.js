@@ -895,6 +895,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
     }
 
+    function isTextNode(node) {
+      return node && node.nodeType === Node.TEXT_NODE;
+    }
+
     /**
      * Compile function matches each node in nodeList against the directives. Once all directives
      * for a particular node are collected their compile functions are executed. The compile
@@ -915,7 +919,18 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       var linkFns = [],
           attrs, directives, nodeLinkFn, childNodes, childLinkFn, linkFnFound;
 
+      var child;
+
       for (var i = 0; i < nodeList.length; i++) {
+        child = nodeList[i];
+        if (isTextNode(child)) {
+          while (isTextNode(child.nextSibling) && child.nextSibling.nodeValue) {
+            nodeList[i].nodeValue += child.nextSibling.nodeValue;
+            child.nextSibling.nodeValue = '';
+            child = child.nextSibling;
+          }
+        }
+
         attrs = new Attributes();
 
         // we must always refer to nodeList[i] since the nodes can be replaced underneath us.
